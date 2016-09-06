@@ -5,8 +5,8 @@
  python hinges_py.py
 
 # Arguments
- - -scene: Chooses one the built-in scenes: 'test', '1', 'shoulder', 'chain'.
- - -dt: A fixed physics time step.
+ - -scene: Chooses one of the built-in scenes: 'test', '1', 'shoulder', 'chain'.
+ - -dt: Sets a fixed physics time step.
  - -adapt_fixed_dt: Tries to adapt the number of physics steps to run between render frame to make the simulation look time based.
  - -flex_dt: The physics time steps is adaptively set to the current frame rate.
  - -paused: Starts paused.
