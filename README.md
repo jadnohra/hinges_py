@@ -30,5 +30,5 @@
  -  On Mac, the application starts minimized, with the glut 'rocket' icon.
 
 # Dependencies
- - Python OpenGL (rendering)
- - Numpy (matrix inversion)
+ - Python OpenGL
+ - Numpy
