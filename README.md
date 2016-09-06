@@ -30,7 +30,7 @@
  - *Escape*: Exits.
 
 #  Notes:
- -  On a Mac, the application may start minimized, with the glut 'rocket' icon.
+ -  On a Mac, the application may start minimized.
 
 # Dependencies
  - [Python 2.7](https://www.python.org/downloads/)
