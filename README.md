@@ -21,12 +21,14 @@
  - *-grav*: Sets a multiplier on gravity.
  - *-si_iters*: The number of constraint block iterations.
  - *-fancy*: Hides occluded lines.
+ - *-print*: Prints frame information to the console.
  - *-h*: Prints any command line arguments that the running code is querying. E.g: The shoulder scene has additional arguments that are too specific to document.
 
 # Keyboard:
  - *WASD, QE*: Controls the camera.
  - *R*: Resets the camera.
- - *Space*: Toggles pausing.
+ - *Enter*: Toggles pausing.
+ - *Space*: Step when paused.
  - *Escape*: Exits.
 
 #  Notes:
