@@ -33,5 +33,5 @@
  -  On a Mac, the application starts minimized, with the glut 'rocket' icon.
 
 # Dependencies
- - Python OpenGL
- - Numpy
+ - [Python OpenGL](http://pyopengl.sourceforge.net/documentation/installation.html)
+ - [Numpy](http://docs.scipy.org/doc/numpy-1.10.1/user/install.html#id4)
