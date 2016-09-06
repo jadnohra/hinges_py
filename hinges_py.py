@@ -5,8 +5,11 @@ import numpy
 import math
 import copy
 import time
-import fcntl, os, sys
 import os, sys
+try:
+  import fcntl
+except ImportError:
+  fcntl = None
 
 def dep_path(fname):
   return os.path.join(os.path.dirname(os.path.realpath(__file__)), fname)
@@ -582,16 +585,17 @@ def scene_idle_func():
 
 
 def handle_console_input():
-    ctx = g_scene_context
-    if (ctx['loop_frame'] == 0):
-        fd = sys.stdin.fileno()
-        fl = fcntl.fcntl(fd, fcntl.F_GETFL)
-        fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
-    try:
-        input = sys.stdin.readline()
-        print 'echo:', input,
-    except:
-        return
+    if fcntl is not None:
+      ctx = g_scene_context
+      if (ctx['loop_frame'] == 0):
+          fd = sys.stdin.fileno()
+          fl = fcntl.fcntl(fd, fcntl.F_GETFL)
+          fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
+      try:
+          input = sys.stdin.readline()
+          print 'echo:', input,
+      except:
+          return
 
 def scene_loop_func():
     handle_console_input()
