@@ -18,7 +18,7 @@
  - *-paused*: Starts paused.
  - *-length*: Exits after the specified amount of seconds.
  - *-baumg*: Sets the Baumgarte stabilization factor.
- - *-grav*: A gravity multiplier.
+ - *-grav*: Sets a multiplier on gravity.
  - *-si_iters*: The number of constraint block iterations.
  - *-fancy*: Hides occluded lines.
  - *-h*: Prints any command line arguments that the running code is querying. E.g: The shoulder scene has additional arguments that are too specific to document.
