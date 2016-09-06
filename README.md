@@ -1,6 +1,10 @@
 # hinges_py
 *hinges_py* is a compact, minimal implementation of rigid-bodies with hinges, including rendering, in Python.
 
+# Screenshot
+<img src="hinges_py_chain.png" width="450">
+
+
 # Command
  python hinges_py.py -scene chain -fancy
 
