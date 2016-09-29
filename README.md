@@ -22,6 +22,7 @@
  - *-si_iters*: The number of constraint block iterations.
  - *-fancy*: Hides occluded wire-frame lines.
  - *-fill*: Fills polygons instead of wire-framing them.
+ - *-mono*: Disables colors, uses monochrome balck and white.
  - *-print*: Prints frame information to the console.
  - *-h*: Prints any command line arguments that the running code is querying. E.g: The shoulder scene has additional arguments that are too specific to document.
 
