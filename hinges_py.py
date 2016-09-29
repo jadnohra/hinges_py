@@ -20,7 +20,6 @@ execfile(dep_path('helper_math1.py'))
 ################################################################################
 # RB Dynamics
 ################################################################################
-
 def rb_create_box(dims, mass):
     rb = { 'dims':dims, 'iM':[0.0]*4, 'q':v3_z()+uquat_id(), 'v':[0.0]*6 }
     if (mass != float('inf')):
@@ -52,7 +51,7 @@ def rb_vec_world2(rb, vec, frame):
     return rb_vec_world(rb, vec) if frame =='l' else vec
 
 def rb_draw(rb, col_func):
-    col_func(1.0,1.0,1.0)
+    rb_col = rb.get('col', [1.0, 1.0, 1.0]); col_func(rb_col[0], rb_col[1], rb_col[2]);
     M = rb_xfm(rb)
     scene_xfm(M)
     scene_draw_box(rb['dims'])
@@ -237,10 +236,10 @@ def scene_1_update(sctx):
         scene['rbs'] = rbs_create(); rbs = scene['rbs'];
         ztr = -4.0
         if 1:
-            rb = rb_create_box([3.0,1.5,0.2], opt_mass1); rbs_add_body(rbs, rb);
+            rb = rb_create_box([3.0,1.5,0.2], opt_mass1); obj_init_color(rb); rbs_add_body(rbs, rb);
             rb['q'][2] = ztr; #rb['v'][0] = 0.5;
         if 1:
-            rb = rb_create_box([1.0,1.0,1.0], 1.0); rbs_add_body(rbs, rb);
+            rb = rb_create_box([1.0,1.0,1.0], 1.0); obj_init_color(rb); rbs_add_body(rbs, rb);
             rb['q'][2] = ztr; rb['q'][0] = 3.0/2.0;
         if ('1' in opt_ctr) and (len(rbs['bodies']) >= 2):
             sph = rb_spherical(rbs, 0, 1, ([3.0/2.0,0.0,ztr], 'w'), (v3_z(), 'l'))
@@ -305,14 +304,14 @@ def scene_shoulder_update(sctx):
         scene['rbs'] = rbs_create(); rbs = scene['rbs']; rbs['g'] = [0.0,opt_grav,0.0];
         # http://www.exrx.net/Kinesiology/Segments.html
         if 1:
-            rb = rb_create_box([1.0,1.0,1.0], float('inf')); rbs_add_body(rbs, rb);
+            rb = rb_create_box([1.0,1.0,1.0], float('inf')); obj_init_color(rb); rbs_add_body(rbs, rb);
             rb['name'] = 'shoulder'
         if 1:
-            rb = rb_create_box([30.2,7.0,7.0], opt_mass1); rbs_add_body(rbs, rb);
+            rb = rb_create_box([30.2,7.0,7.0], opt_mass1); obj_init_color(rb); rbs_add_body(rbs, rb);
             rb['q'][0] = (30.2/2.0);
             rb['name'] = 'upper-arm'
         if 1:
-            rb = rb_create_box([26.9,5.0,5.0], 1.5); rbs_add_body(rbs, rb);
+            rb = rb_create_box([26.9,5.0,5.0], 1.5); obj_init_color(rb); rbs_add_body(rbs, rb);
             rb['q'][0] = (30.2)+(26.9/2.0);
             rb['name'] = 'forearm'
         if True:
@@ -336,7 +335,7 @@ def scene_shoulder_update(sctx):
             hng = rb_hinge(rbs, b1, b2, hpt, haxis, hpt, haxis)
             rbs_add_constraint(rbs, hng)
         if opt_mode == 'ik':
-            rb = rb_create_box([1.0,1.0,1.0], float('inf')); rbs_add_body(rbs, rb);
+            rb = rb_create_box([1.0,1.0,1.0], float('inf')); obj_init_color(rb); rbs_add_body(rbs, rb);
             rb['q'][0] = (30.2)+(26.9);
             rb['name'] = 'ik'
             speed = float(arg_get('-speed', 1.0))
@@ -450,7 +449,7 @@ def scene_chain_update(sctx):
         ztr = 0.0
         prbi = -1
         for i in range(opt_len):
-            rb = rb_create_box([1.0,1.0,1.0], float('inf') if (i == 0) else 1.0); rbi = rbs_add_body(rbs, rb);
+            rb = rb_create_box([1.0,1.0,1.0], float('inf') if (i == 0) else 1.0); obj_init_color(rb); rbi = rbs_add_body(rbs, rb);
             rb['q'][2] = ztr; rb['q'][1] = -float(i)*1.0; rb['q'][0] = -(0.5+float(i-1)) if i>0 else 0.0;
             if (i > 0):
                 pvt = vec_add(rb['q'][:3], [0.5,0.5,0.0])
@@ -475,6 +474,33 @@ col_rd = [1.0,0.0,0.0]
 col_grn = [0.0,1.0,0.0]
 col_bl = [0.0,0.0,1.0]
 col_blk = [0.0,0.0,0.0]
+
+def hsv2rgb(h, s, v):
+    hi = int(h*6)
+    f = h*6 - hi
+    p = v * (1 - s); q = v * (1 - f * s); t = v * (1 - (1 - f) * s);
+    r, g, b = 0, 0, 0
+    if hi == 0: r, g, b = v, t, p
+    elif hi == 1: r, g, b = q, v, p
+    elif hi == 2: r, g, b = p, v, t
+    elif hi == 3: r, g, b = p, q, v
+    elif hi == 4: r, g, b = t, p, v
+    elif hi == 5: r, g, b = v, p, q
+    return [r, g, b]
+
+g_randcol_h = 0.0
+def randcol():
+  global g_randcol_h
+  golden_ratio_conjugate = 0.618033988749895
+  g_randcol_h = g_randcol_h + golden_ratio_conjugate
+  g_randcol_h = g_randcol_h % 1.0
+  return hsv2rgb(g_randcol_h, 0.5, 0.95)
+
+def obj_init_color(obj):
+    if arg_has('-mono'):
+      obj['col'] = col_wt
+    else:
+      obj['col'] = randcol()
 
 def scene_empty_update(sctx):
     return True
@@ -650,25 +676,30 @@ def scene_loop_func():
             if (do_draw):
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
-                if (not arg_has('-fancy')):
-                    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                if (arg_has('-fill')):
+                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
                     glMatrixMode(GL_MODELVIEW)
                     ctx['draw_func'](ctx, scene_color_pass)
                 else:
-                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                    glMatrixMode(GL_MODELVIEW)
-                    glColor3f(0.0,0.0,0.0)
-                    ctx['draw_func'](ctx, scene_color_zero)
+                  if (not arg_has('-fancy')):
+                      glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                      glMatrixMode(GL_MODELVIEW)
+                      ctx['draw_func'](ctx, scene_color_pass)
+                  else:
+                      glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+                      glMatrixMode(GL_MODELVIEW)
+                      glColor3f(0.0,0.0,0.0)
+                      ctx['draw_func'](ctx, scene_color_zero)
 
-                    glEnable(GL_POLYGON_OFFSET_LINE);
-                    glPolygonOffset(-1,-1);
+                      glEnable(GL_POLYGON_OFFSET_LINE);
+                      glPolygonOffset(-1,-1);
 
-                    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-                    glMatrixMode(GL_MODELVIEW)
-                    ctx['draw_func'](ctx, scene_color_pass)
+                      glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                      glMatrixMode(GL_MODELVIEW)
+                      ctx['draw_func'](ctx, scene_color_pass)
 
-                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                    glDisable(GL_POLYGON_OFFSET_LINE);
+                      glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+                      glDisable(GL_POLYGON_OFFSET_LINE);
 
                 glutSwapBuffers()
 
@@ -746,6 +777,48 @@ def scene_go(title, update_func, draw_func, input_func = scene_def_input):
     scene_viewport_init(g_scene_context['wind_w'], g_scene_context['wind_h'])
     glutMainLoop()
 
+################################################################################
+# More scenes
+################################################################################
+
+def scene_rbcable1_update(sctx):
+    scene = sctx['scene']
+    opt_len = int(arg_get('-length', 6))
+    opt_grav = float(arg_get('-grav', -10.0))
+    opt_load = float(arg_get('-load', 100.0))
+    if (sctx['frame'] == 0):
+        scene['rbs'] = rbs_create(); rbs = scene['rbs'];
+        rbs['g'] = [0.0,opt_grav,0.0]
+        ztr = 0.0
+        prbi = -1
+        el_h = 1.0; el_w = 0.1;
+        for i in range(opt_len):
+            rb = rb_create_box([el_w,el_h,el_w], float('inf') if (i == 0) else 1.0); obj_init_color(rb); rbi = rbs_add_body(rbs, rb);
+            obj_init_color(rb)
+            rb['q'][2] = ztr; rb['q'][1] = -float(i)*el_h; rb['q'][0] = 0.0;
+            if (i > 0):
+                pvt = vec_add(rb['q'][:3], [0.0,el_h*0.5,0.0])
+                sph = rb_spherical(rbs, prbi, rbi, (pvt, 'w'), (pvt, 'w'))
+                rbs_add_constraint(rbs, sph)
+            prbi = rbi
+        if opt_load > 0.0:
+          rb = rb_create_box([2.0*el_w,2.0*el_w,2.0*el_w], opt_load); obj_init_color(rb); rbi = rbs_add_body(rbs, rb);
+          obj_init_color(rb)
+          rb['q'][2] = ztr; rb['q'][1] = -(float(opt_len-1)*el_h+0.5*el_h); rb['q'][0] = 0.0;
+          if (prbi >= 0):
+              pvt = vec_add(rb['q'][:3], [0.0,el_h*0.5,0.0])
+              sph = rb_spherical(rbs, prbi, rbi, (pvt, 'w'), (pvt, 'w'))
+              rbs_add_constraint(rbs, sph)
+          prbi = rbi
+
+    rbs_step(scene['rbs'], sctx['dt'], int(arg_get('-si_iters', 8)))
+
+    return True
+
+def scene_default_draw(sctx, col_func):
+    scene = sctx['scene']
+    rbs_draw(scene['rbs'], col_func)
+
 if __name__ == "__main__":
     scene_name = arg_get('-scene', 'test')
     scene_title = 'Scene: {}'.format(scene_name)
@@ -755,5 +828,7 @@ if __name__ == "__main__":
         scene_go(scene_title, scene_shoulder_update, scene_shoulder_draw, scene_shoulder_input)
     elif (scene_name == 'chain'):
         scene_go(scene_title, scene_chain_update, scene_chain_draw)
+    elif (scene_name == 'rbcable1'):
+        scene_go(scene_title, scene_rbcable1_update, scene_default_draw)
     else:
         scene_go(scene_title, scene_empty_update, scene_test_draw)
