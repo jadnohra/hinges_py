@@ -828,7 +828,7 @@ if __name__ == "__main__":
         scene_go(scene_title, scene_shoulder_update, scene_shoulder_draw, scene_shoulder_input)
     elif (scene_name == 'chain'):
         scene_go(scene_title, scene_chain_update, scene_chain_draw)
-    elif (scene_name == 'rbcable1'):
+    elif (scene_name == 'cable'):
         scene_go(scene_title, scene_rbcable1_update, scene_default_draw)
     else:
         scene_go(scene_title, scene_empty_update, scene_test_draw)
