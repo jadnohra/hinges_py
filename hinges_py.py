@@ -541,8 +541,7 @@ def scene_viewport_init(w, h, aa = True):
     glMatrixMode(GL_MODELVIEW)
     glPolygonMode( GL_FRONT_AND_BACK, GL_LINE )
 
-    #glEnable(GL_MULTISAMPLE)
-    #glGetIntegerv(GL_SAMPLES, 4)
+    glEnable(GL_MULTISAMPLE)
     if (aa):
         glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
         glEnable (GL_BLEND)
@@ -752,7 +751,7 @@ def scene_go(title, update_func, draw_func, input_func = scene_def_input):
     global g_scene_context
 
     glutInit(sys.argv)
-    glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH) #  | GLUT_MULTISAMPLE
+    glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH | (GLUT_MULTISAMPLE if arg_has('-multisample') else 0) ) #
     glutInitWindowSize(g_scene_context['wind_w'], g_scene_context['wind_h'])
     glutInitWindowPosition(200,200)
 
