@@ -20,8 +20,15 @@ execfile(dep_path('helper_math1.py'))
 ################################################################################
 # RB Dynamics
 ################################################################################
+def rb_create():
+    rb = { 'iM':[0.0]*4, 'q':v3_z()+uquat_id(), 'v':[0.0]*6 }
+    if arg_has('-integ_implicit'):
+      rb['pv'] = rb['v']
+    return rb
+
 def rb_create_box(dims, mass):
-    rb = { 'dims':dims, 'iM':[0.0]*4, 'q':v3_z()+uquat_id(), 'v':[0.0]*6 }
+    rb = rb_create()
+    rb['dims'] = dims
     if (mass != float('inf')):
         rb['iM'][0] = 1.0/mass
         rb['iM'][1+0] = 12.0/(mass*(m_sq(dims[1])+m_sq(dims[2])))
@@ -135,18 +142,21 @@ def rb_anim_sph_sample_func(t, h, state):
     pt2 = mat4_mul_pt(state['xfm'], coord_sph_to_cart2(((t+h)*state['speed'], crds[1], crds[2])))
     return pt, vec_muls(vec_sub(pt2, pt), 1.0/h)
 
-def rb_get_step_q(rb, h):
-    q = copy.copy(rb['q']); v = rb['v'];
+def rb_get_step_q(rb, h, v):
+    q = copy.copy(rb['q'])
     q[:3] = vec_add(q[:3], vec_muls(v[:3], h))
     q[3:] = quat_mul(q[3:], rv_to_uquat(vec_muls(v[3:],h)) )
     q[3:] = vec_normd(q[3:])
     return q
 
-def rb_step_q(rb, h):
-    rb['q'] = rb_get_step_q(rb, h)
+def rb_step_q(rb, h, v):
+    rb['q'] = rb_get_step_q(rb, h, v)
 
 def rbs_create():
     return { 'bodies':[], 'constraints':[], 'anims':[], 'g':v3_z(), 'stats':{'err_sq':0.0} }
+
+def rbs_get_body(rbs, rbi):
+    return rbs['bodies'][rbi]
 
 def rbs_add_body(rbs, rb):
     rbs['bodies'].append(rb); return len(rbs['bodies'])-1;
@@ -200,10 +210,17 @@ def rbs_step_si_v(rbs, h, iters):
             step_ctr(ctr, h)
 
 def rbs_step_q(rbs, h):
+    vkey = 'pv' if arg_has('-integ_implicit') else 'v'
     for rb in rbs['bodies']:
-        rb_step_q(rb, h)
+        rb_step_q(rb, h, rb[vkey])
+
+def rbs_v_to_pv(rbs):
+  for rb in rbs['bodies']:
+    rb['pv'] = copy.copy(rb['v'])
 
 def rbs_step(rbs, h, si_iters):
+    if arg_has('-integ_implicit'):
+      rbs_v_to_pv(rbs)
     rbs_step_anims(rbs, h)
     rbs_step_si_v(rbs, h, si_iters)
     rbs_step_q(rbs, h)
@@ -782,9 +799,11 @@ def scene_go(title, update_func, draw_func, input_func = scene_def_input):
 
 def scene_rbcable1_update(sctx):
     scene = sctx['scene']
-    opt_len = int(arg_get('-length', 6))
+    opt_len = int(arg_get('-length', 10))
     opt_grav = float(arg_get('-grav', -10.0))
-    opt_load = float(arg_get('-load', 100.0))
+    opt_load = float(arg_get('-load', 200.0))
+    opt_pert = float(arg_get('-pert', 0.3))
+    opt_iters = int(arg_get('-si_iters', 12))
     if (sctx['frame'] == 0):
         scene['rbs'] = rbs_create(); rbs = scene['rbs'];
         rbs['g'] = [0.0,opt_grav,0.0]
@@ -799,6 +818,10 @@ def scene_rbcable1_update(sctx):
                 pvt = vec_add(rb['q'][:3], [0.0,el_h*0.5,0.0])
                 sph = rb_spherical(rbs, prbi, rbi, (pvt, 'w'), (pvt, 'w'))
                 rbs_add_constraint(rbs, sph)
+                if opt_pert > 0.0 and prbi >= 1:
+                  prbq = rbs_get_body(rbs, prbi)['q']
+                  prbq[3:] = [prbq[3:][i] + rand_ampl(opt_pert) for i in range(4)]
+                  prbq[3:] = vec_normd(prbq[3:])
             prbi = rbi
         if opt_load > 0.0:
           rb = rb_create_box([2.0*el_w,2.0*el_w,2.0*el_w], opt_load); obj_init_color(rb); rbi = rbs_add_body(rbs, rb);
@@ -810,7 +833,7 @@ def scene_rbcable1_update(sctx):
               rbs_add_constraint(rbs, sph)
           prbi = rbi
 
-    rbs_step(scene['rbs'], sctx['dt'], int(arg_get('-si_iters', 8)))
+    rbs_step(scene['rbs'], sctx['dt'], opt_iters)
 
     return True
 
